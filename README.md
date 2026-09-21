@@ -1,56 +1,142 @@
-# Welcome to your Expo app 👋
+# 🛍️ La Tienda — App de E-Commerce Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Aplicación móvil de e-commerce construida con **Expo SDK 57** y **React Native**, desarrollada como proyecto integrador para la Tecnicatura Superior en Desarrollo de Software (TSDS).
 
-## Get started
+---
 
-1. Install dependencies
+## 📱 Capturas de pantalla y Módulos
 
-   ```bash
-   npm install
-   ```
+| Catálogo & Búsqueda | Detalle con Rating | Carrito Interactable | Checkout & Envío | Favoritos | Perfil & GPS |
+|---|---|---|---|---|---|
+| Buscador + Chips + Hero | Imagen + ⭐ Rating | Controles `+` / `-` | Formulario de Pago | Lista Persistente | Avatar + Ubicación |
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## 🚀 Tecnologías Utilizadas
 
-In the output, you'll find options to open the app in a
+| Tecnología | Versión | Uso |
+|---|---|---|
+| [Expo](https://expo.dev) | ~57.0.22 | Plataforma base móvil |
+| [React Native](https://reactnative.dev) | 0.86.3 | UI nativa e interacciones |
+| [Expo Router](https://docs.expo.dev/router/introduction/) | ~57.0.22 | Navegación basada en archivos (File-based Routing) |
+| [TypeScript](https://www.typescriptlang.org/) | ~6.0.3 | Tipado estático y seguridad |
+| [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) | 2.2.0 | Persistencia local (Carrito, Favoritos, Perfil) |
+| [expo-image-picker](https://docs.expo.dev/versions/v57.0.0/sdk/imagepicker/) | ~57.0.19 | Captura y selección de foto de perfil |
+| [expo-location](https://docs.expo.dev/versions/v57.0.0/sdk/location/) | ~57.0.19 | Geolocalización GPS |
+| [@expo/vector-icons](https://docs.expo.dev/guides/icons/) | ^15.0.2 | Iconografía nativa (Ionicons) |
+| [react-native-safe-area-context](https://docs.expo.dev/versions/v57.0.0/sdk/safe-area-context/) | ~5.7.0 | Adaptación a notches y márgenes seguros |
+| [FakeStore API](https://fakestoreapi.com/) | Live API | Catálogo de productos en tiempo real |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 📁 Estructura Completa del Proyecto
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+miPrimeraAPPMobile/
+├── app.json                    # Configuración de Expo (Splash, Iconos, Permisos)
+├── package.json                # Dependencias y scripts
+├── tsconfig.json               # Configuración TypeScript
+└── src/
+    ├── app/                    # 📂 Rutas principales (Expo Router)
+    │   ├── _layout.tsx         # Layout raíz (Providers: Profile, Cart, Favorites)
+    │   ├── cart.tsx            # Carrito interactivo (+/- cantidad, subtotal, eliminar)
+    │   ├── checkout.tsx        # Formulario de pago, dirección de envío y confirmación
+    │   ├── explore.tsx         # Pantalla de estadísticas / tema Cyber
+    │   ├── (tabs)/             # 📂 Navegación por Tabs principales
+    │   │   ├── _layout.tsx     # Configuración de TabBar con íconos Ionicons
+    │   │   ├── index.tsx       # Catálogo con Búsqueda, Filtro por Categoría, Pull-to-Refresh
+    │   │   ├── favoritos.tsx   # Lista de Favoritos guardados
+    │   │   └── perfil.tsx      # Perfil de usuario (Avatar + GPS + formulario editable)
+    │   └── product/
+    │       └── [id].tsx        # Vista detallada del producto con ⭐ Rating y Selector de Cantidad
+    │
+    ├── components/             # 📂 Componentes reutilizables de UI
+    │   ├── ProductCard.tsx     # Tarjeta de producto con botón "+ Agregar", Favorito y Rating
+    │   ├── HeroBanner.tsx      # Banner promocional destacado para la vista principal
+    │   ├── Toast.tsx           # Notificación flotante emergente de confirmación visual
+    │   ├── AvatarPicker.tsx    # Componente para tomar/elegir foto de perfil
+    │   ├── LocationPicker.tsx  # Componente para detectar coordenadas GPS
+    │   └── ui/
+    │       └── ModuleCard.tsx  # Tarjetas de módulo con estética Cyber
+    │
+    ├── context/                # 📂 Contextos globales de estado (Providers)
+    │   ├── CartContext.tsx     # Estado global del Carrito (agregar, quitar, updateQuantity)
+    │   ├── FavoritesContext.tsx # Estado global de Favoritos (persistente)
+    │   └── ProfileContext.tsx   # Estado global del Perfil de usuario (persistente)
+    │
+    └── services/
+        ├── api.ts              # Conexión HTTP a FakeStore API (getProducts, getProductById)
+        └── storage.ts         # Métodos de AsyncStorage para respaldo del carrito
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-### Other setup steps
+## 🛠️ Novedades e Implementaciones Realizadas (Última Auditoría)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### 1. 🔴 Módulo de Checkout Completo (`/checkout`)
+- **Formulario de Envío:** Captura de Nombre completo, Dirección, Ciudad y Teléfono.
+- **Resumen de Pedido:** Lista detallada de ítems comprados, cantidades y precio total formateado en pesos argentinos (`$ ES-AR`).
+- **Métodos de Pago:** Selector dinámico interactivo (💳 Tarjeta, 💵 Efectivo, 🏦 Transferencia).
+- **Finalización:** Botón "Confirmar y Pagar" que limpia el carrito automáticamente, emite una alerta de éxito personalizada y redirige al inicio (`/`).
 
-## Learn more
+### 2. 🟡 Buscador y Filtro por Categorías en Tiempo Real
+- **Buscador Dinámico:** Campo `TextInput` con ícono y botón para limpiar búsqueda (`✕`), filtrando el catálogo instantáneamente al escribir.
+- **Chips de Categoría:** Scroll horizontal con filtros (`Todas`, `Electronics`, `Jewelery`, `Men's clothing`, `Women's clothing`) que resalta la categoría activa y filtra los productos.
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. 🟡 Hero Banner Promocional (`HeroBanner.tsx`)
+- Incorporado en la parte superior del catálogo (`ListHeaderComponent`) con llamada a la acción ("Ver mi Carrito 🛒") y estética visual atractiva.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### 4. 🟡 Header Cart Badge Interactivo
+- El badge `🛒 {count}` en el header del catálogo es un botón `Pressable` que permite navegar directamente a la pantalla del carrito `/cart`.
 
-## Join the community
+### 5. 🟡 Toast / Feedback de Confirmación Visual (`Toast.tsx`)
+- Componente de notificación animada (`Animated.View`) que aparece temporalmente en la parte inferior al agregar productos al carrito o marcarlos como favoritos.
 
-Join our community of developers creating universal apps.
+### 6. 🟢 Controles de Cantidad en Carrito (+/-)
+- Botones de incremento (`+`) y decremento (`-`) directo por ítem en `cart.tsx`. Reducir la cantidad a cero elimina el ítem automáticamente.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 7. 🟢 Pull-to-Refresh y Valoración Rating (⭐)
+- **Pull-to-refresh:** Permite deslizar hacia abajo en la pantalla principal para actualizar el catálogo desde la API.
+- **Rating:** Visualización de puntajes `⭐ rating.rate (count)` tanto en las tarjetas del catálogo como en la pantalla de detalle del producto.
+
+### 8. 🔴 Persistencia de Favoritos y Perfil
+- Implementación de `FavoritesContext` y `ProfileContext` guardando la información en `AsyncStorage` (`@favorites`, `@user_profile`).
+
+---
+
+## 🧪 Auditoría y Resultados de Pruebas (8/8 Pasados)
+
+| # | Prueba | Estado | Notas |
+|---|---|---|---|
+| 1 | Tabs funcionando | ✅ PASA | 3 Tabs (`Catálogo`, `Favoritos`, `Perfil`) activas y navegables. |
+| 2 | FlatList visible | ✅ PASA | Renderiza productos dinámicos con `ProductCard`. |
+| 3 | Ruta dinámica abre | ✅ PASA | Abre `/product/[id]` pasando el parámetro ID. |
+| 4 | Botón volver | ✅ PASA | Volver atrás vía `router.back()`. |
+| 5 | Catálogo oficial API | ✅ PASA | Consume `https://fakestoreapi.com/products`. |
+| 6 | Props correctas en ProductCard | ✅ PASA | Recibe imagen, nombre, precio, categoría, rating y callbacks. |
+| 7 | Detalle coincide con ID | ✅ PASA | Carga el producto real de la API en el detalle via `getProductById()`. |
+| 8 | Consola sin errores TS | ✅ PASA | `tsc --noEmit` ejecuta limpiamente sin fallos de compilación. |
+
+---
+
+## ⚙️ Instalación y Ejecución
+
+```bash
+# 1. Clonar el repositorio
+git clone <url-del-repo>
+cd miPrimeraAPPMobile
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Iniciar el servidor de desarrollo Expo
+npx expo start
+```
+
+---
+
+## 👨‍💻 Autor
+
+**Hernán Rodríguez**  
+*Tecnicatura Superior en Desarrollo de Software (TSDS) — 3er Año*  
+*Materia: Programación Mobile*
