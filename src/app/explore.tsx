@@ -1,16 +1,19 @@
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScreenContainer } from '../components/ui/ScreenContainer';
 import { CYBER_THEME } from '../constants/theme';
 
 export default function ExploreScreen() {
   return (
-    <SafeAreaView style={s.container}>
+    <ScreenContainer
+      mode="stack"
+      backgroundColor={CYBER_THEME.colors.background}
+      barStyle="light-content"
+    >
       <View style={s.content}>
         <Text style={s.tag}>ANALYTICS // HUD</Text>
         <Text style={s.title}>ESTADÍSTICAS DEL SISTEMA</Text>
 
-        {/* Tarjetas de métricas rápidas con Flexbox */}
         <View style={s.statsGrid}>
           <View style={s.statCard}>
             <Text style={s.statValue}>99.8%</Text>
@@ -22,22 +25,17 @@ export default function ExploreScreen() {
           </View>
         </View>
 
-        {/* Botón para volver a la pantalla principal */}
         <Link href="/" asChild>
           <Pressable style={s.btnVolver}>
             <Text style={s.btnVolverTxt}>&lt; VOLVER AL PANEL</Text>
           </Pressable>
         </Link>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: CYBER_THEME.colors.background,
-  },
   content: {
     padding: 24,
   },

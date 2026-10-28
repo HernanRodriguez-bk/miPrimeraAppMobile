@@ -140,3 +140,7 @@ npx expo start
 **Hernán Rodríguez**  
 *Tecnicatura Superior en Desarrollo de Software (TSDS) — 3er Año*  
 *Materia: Programación Mobile*
+
+
+
+// el buscador y los filtros al escribir una letra se cerrar

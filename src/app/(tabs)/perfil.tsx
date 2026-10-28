@@ -1,229 +1,186 @@
 import { AvatarPicker } from '@/components/AvatarPicker';
+import { LocationPicker } from '@/components/LocationPicker';
+import { ProfileFormCard, ProfileFormValues } from '@/components/ProfileFormCard';
+import { AppButton } from '@/components/ui/AppButton';
+import { LoadingState } from '@/components/ui/StateFeedback';
+import { APP_THEME } from '@/constants/theme';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProfile } from '../../context/ProfileContext';
 
 export default function PerfilScreen() {
-    const { profile, updateProfile, isLoading } = useProfile();
-    const [isEditing, setIsEditing] = useState(false);
+  const insets = useSafeAreaInsets();
+  const { profile, updateProfile, isLoading } = useProfile();
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
-    const [nombre, setNombre] = useState('');
-    const [email, setEmail] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [avatarUri, setAvatarUri] = useState<string | null | undefined>(null); // <-- Nuevo estado
+  const [formValues, setFormValues] = useState<ProfileFormValues>({
+    nombre: '',
+    email: '',
+    telefono: '',
+  });
+  const [avatarUri, setAvatarUri] = useState<string | null | undefined>(null);
 
-    useEffect(() => {
-        if (profile) {
-            setNombre(profile.nombre);
-            setEmail(profile.email);
-            setTelefono(profile.telefono);
-            setAvatarUri(profile.avatarUri); // <-- Cargamos la foto guardada
-        }
-    }, [profile]);
+  useEffect(() => {
+    setFormValues({
+      nombre: profile.nombre,
+      email: profile.email,
+      telefono: profile.telefono,
+    });
+    setAvatarUri(profile.avatarUri);
+  }, [profile]);
 
-    const handleSave = async () => {
-        await updateProfile({ nombre, email, telefono, avatarUri }); // <-- Guardamos la foto
-        setIsEditing(false);
-        Alert.alert('¡Listo!', 'Tu perfil ha sido actualizado.');
-    };
+  const handleFieldChange = (field: keyof ProfileFormValues, value: string) => {
+    setFormValues((prev) => ({ ...prev, [field]: value }));
+  };
 
-    const handleCancel = () => {
-        // Restauramos los valores originales si cancela
-        setNombre(profile?.nombre || '');
-        setEmail(profile?.email || '');
-        setTelefono(profile?.telefono || '');
-        setAvatarUri(profile?.avatarUri); // <-- Restauramos la foto original
-        setIsEditing(false);
-    };
-
-    if (isLoading) {
-        return (
-            <SafeAreaView style={styles.center}>
-                <ActivityIndicator size="large" color="#1357C5" />
-            </SafeAreaView>
-        );
+  const handleSave = async () => {
+    if (!formValues.nombre.trim() || !formValues.email.trim()) {
+      Alert.alert('Datos incompletos', 'El nombre y el correo electrónico son obligatorios.');
+      return;
     }
+    await updateProfile({
+      ...formValues,
+      avatarUri,
+    });
+    setIsEditing(false);
+    Alert.alert('¡Listo!', 'Tu perfil ha sido actualizado.');
+  };
 
-    // Obtenemos la inicial para el Avatar
-    const inicial = profile?.nombre ? profile.nombre.charAt(0).toUpperCase() : 'U';
+  const handleCancel = () => {
+    setFormValues({
+      nombre: profile.nombre,
+      email: profile.email,
+      telefono: profile.telefono,
+    });
+    setAvatarUri(profile.avatarUri);
+    setIsEditing(false);
+  };
 
+  if (isLoading) {
     return (
-        <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scroll}>
-
-                {/* Cabecera */}
-                <View style={styles.headerBackground} />
-
-                {/* Selector de Avatar */}
-                <View style={{ marginTop: -80, zIndex: 10 }}>
-                    <AvatarPicker
-                        avatarUri={avatarUri}
-                        isEditing={isEditing}
-                        onImageSelected={setAvatarUri}
-                    />
-                </View>
-
-                {/* Información Principal (Solo visible en modo lectura) */}
-                {!isEditing && (
-                    <View style={styles.mainInfo}>
-                        <Text style={styles.nameTitle}>{profile.nombre}</Text>
-                        <Text style={styles.emailSubtitle}>{profile.email}</Text>
-                    </View>
-                )}
-
-                {/* Tarjeta de Datos Personales */}
-                <View style={[styles.card, isEditing ? { marginTop: 60 } : null]}>
-                    <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>
-                            {isEditing ? 'Editar Información' : 'Datos Personales'}
-                        </Text>
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Nombre completo</Text>
-                        {isEditing ? (
-                            <TextInput
-                                style={styles.input}
-                                value={nombre}
-                                onChangeText={setNombre}
-                                placeholder="Tu nombre"
-                            />
-                        ) : (
-                            <Text style={styles.valueText}>{profile.nombre}</Text>
-                        )}
-                    </View>
-
-                    <View style={styles.divider} />
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Correo Electrónico</Text>
-                        {isEditing ? (
-                            <TextInput
-                                style={styles.input}
-                                value={email}
-                                onChangeText={setEmail}
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                placeholder="tu@email.com"
-                            />
-                        ) : (
-                            <Text style={styles.valueText}>{profile.email}</Text>
-                        )}
-                    </View>
-
-                    <View style={styles.divider} />
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Teléfono</Text>
-                        {isEditing ? (
-                            <TextInput
-                                style={styles.input}
-                                value={telefono}
-                                onChangeText={setTelefono}
-                                keyboardType="phone-pad"
-                                placeholder="Tu número"
-                            />
-                        ) : (
-                            <Text style={styles.valueText}>
-                                {profile.telefono || 'No especificado'}
-                            </Text>
-                        )}
-                    </View>
-                </View>
-
-                {/* Botones de Acción */}
-                <View style={styles.actions}>
-                    {isEditing ? (
-                        <>
-                            <Pressable style={[styles.btn, styles.btnSave]} onPress={handleSave}>
-                                <Text style={styles.btnSaveText}>Guardar Cambios</Text>
-                            </Pressable>
-                            <Pressable style={[styles.btn, styles.btnCancel]} onPress={handleCancel}>
-                                <Text style={styles.btnCancelText}>Cancelar</Text>
-                            </Pressable>
-                        </>
-                    ) : (
-                        <Pressable style={[styles.btn, styles.btnEdit]} onPress={() => setIsEditing(true)}>
-                            <Text style={styles.btnEditText}>Editar Perfil</Text>
-                        </Pressable>
-                    )}
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <LoadingState message="Cargando perfil..." />
+      </View>
     );
+  }
 
+  const fallbackInitial = profile.nombre ? profile.nombre.charAt(0).toUpperCase() : 'U';
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        {/* Cabecera full-bleed adaptada con useSafeAreaInsets para Expo SDK 58 Edge-to-Edge */}
+        <View
+          style={[
+            styles.headerBackground,
+            { paddingTop: insets.top, height: 136 + insets.top },
+          ]}
+        />
+
+        {/* Avatar con captura por Cámara y selección desde Galería */}
+        <View style={styles.avatarWrapper}>
+          <AvatarPicker
+            avatarUri={avatarUri}
+            fallbackInitial={fallbackInitial}
+            isEditing={isEditing}
+            onImageSelected={setAvatarUri}
+          />
+        </View>
+
+        {!isEditing ? (
+          <View style={styles.mainInfo}>
+            <Text style={styles.nameTitle}>{profile.nombre}</Text>
+            <Text style={styles.emailSubtitle}>{profile.email}</Text>
+          </View>
+        ) : null}
+
+        {/* Formulario componentizado de Datos Personales */}
+        <ProfileFormCard
+          isEditing={isEditing}
+          values={formValues}
+          onChangeField={handleFieldChange}
+        />
+
+        {/* Geolocalización GPS reutilizable */}
+        <View style={styles.locationWrapper}>
+          <LocationPicker />
+        </View>
+
+        {/* Acciones de Edición */}
+        <View style={styles.actions}>
+          {isEditing ? (
+            <>
+              <AppButton
+                label="Guardar Cambios"
+                size="lg"
+                variant="primary"
+                onPress={handleSave}
+              />
+              <AppButton
+                label="Cancelar"
+                size="lg"
+                variant="outline"
+                onPress={handleCancel}
+              />
+            </>
+          ) : (
+            <AppButton
+              label="Editar Perfil"
+              size="lg"
+              variant="soft"
+              onPress={() => setIsEditing(true)}
+            />
+          )}
+        </View>
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F4F6F8' },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    scroll: { paddingBottom: 40 },
-
-    // Diseño de la Cabecera
-    headerBackground: {
-        backgroundColor: '#1357C5', // Azul corporativo
-        height: 140,
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        position: 'relative',
-        zIndex: 1,
-    },
-    avatarContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#FFFFFF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: -50, // Efecto de superposición
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 6,
-    },
-    avatarText: { fontSize: 36, fontWeight: '800', color: '#1357C5' },
-
-    // Textos debajo del Avatar
-    mainInfo: { marginTop: 60, alignItems: 'center', paddingHorizontal: 20 },
-    nameTitle: { fontSize: 24, fontWeight: '800', color: '#0B1F3A' },
-    emailSubtitle: { fontSize: 16, color: '#506079', marginTop: 4 },
-
-    // Tarjeta de Formulario
-    card: {
-        backgroundColor: '#FFFFFF',
-        marginHorizontal: 20,
-        marginTop: 30,
-        borderRadius: 16,
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
-        elevation: 3,
-    },
-    cardHeader: { marginBottom: 16 },
-    cardTitle: { fontSize: 18, fontWeight: '700', color: '#0B1F3A' },
-    inputContainer: { marginVertical: 6 },
-    label: { fontSize: 12, fontWeight: '600', color: '#8294B0', textTransform: 'uppercase', marginBottom: 4 },
-    valueText: { fontSize: 16, color: '#0B1F3A', fontWeight: '500', paddingVertical: 8 },
-    input: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#1357C5',
-        fontSize: 16,
-        color: '#0B1F3A',
-        paddingVertical: 8,
-    },
-    divider: { height: 1, backgroundColor: '#EAF3FF', marginVertical: 8 },
-
-    // Botones
-    actions: { marginHorizontal: 20, marginTop: 30, gap: 12 },
-    btn: { padding: 16, borderRadius: 12, alignItems: 'center' },
-    btnEdit: { backgroundColor: '#EAF3FF' },
-    btnEditText: { color: '#1357C5', fontSize: 16, fontWeight: '700' },
-    btnSave: { backgroundColor: '#1357C5' },
-    btnSaveText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-    btnCancel: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#CBD5E1' },
-    btnCancelText: { color: '#64748B', fontSize: 16, fontWeight: '700' },
+  container: {
+    flex: 1,
+    backgroundColor: APP_THEME.colors.backgroundAlt,
+  },
+  scroll: {
+    paddingBottom: 40,
+  },
+  headerBackground: {
+    backgroundColor: APP_THEME.colors.primaryDark,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    position: 'relative',
+    zIndex: 1,
+  },
+  avatarWrapper: {
+    marginTop: -64,
+    zIndex: 10,
+  },
+  mainInfo: {
+    marginTop: 8,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  nameTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: APP_THEME.colors.textDark,
+  },
+  emailSubtitle: {
+    fontSize: 15,
+    color: '#506079',
+    marginTop: 4,
+  },
+  locationWrapper: {
+    marginHorizontal: 20,
+    marginTop: 16,
+  },
+  actions: {
+    marginHorizontal: 20,
+    marginTop: 24,
+    gap: 12,
+  },
 });

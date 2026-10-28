@@ -1,73 +1,101 @@
 import * as Location from 'expo-location';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { APP_THEME } from '../constants/theme';
+import { AppButton } from './ui/AppButton';
 
 export const LocationPicker = () => {
-    const [location, setLocation] = useState<Location.LocationObject | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-    const obtenerUbicacion = async () => {
-        setLoading(true);
-        try {
-            // 1. Solicitar permisos de ubicación
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permiso denegado', 'Se requiere acceso a la ubicación para calcular envíos.');
-                setLoading(false);
-                return;
-            }
+  const obtenerUbicacion = async () => {
+    setLoading(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permiso denegado',
+          'Se requiere acceso a la ubicación para calcular envíos.'
+        );
+        return;
+      }
 
-            // 2. Obtener posición GPS
-            const currentLocation = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Balanced,
-            });
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
 
-            setLocation(currentLocation);
-        } catch (error) {
-            Alert.alert('Error', 'No se pudo obtener la ubicación actual.');
-        } finally {
-            setLoading(false);
-        }
-    };
+      setLocation(currentLocation);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo obtener la ubicación actual.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>📍 Envíos a tu ubicación</Text>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>📍 Envíos a tu ubicación</Text>
 
-            {loading ? (
-                <ActivityIndicator color="#2563EB" />
-            ) : location ? (
-                <View style={styles.coordsBox}>
-                    <Text style={styles.coordText}>Latitud: {location.coords.latitude.toFixed(4)}</Text>
-                    <Text style={styles.coordText}>Longitud: {location.coords.longitude.toFixed(4)}</Text>
-                </View>
-            ) : (
-                <Text style={styles.subtext}>Ubicación no seleccionada.</Text>
-            )}
-
-            <Pressable style={styles.btn} onPress={obtenerUbicacion}>
-                <Text style={styles.btnText}>Detectar Ubicación GPS</Text>
-            </Pressable>
+      {loading ? (
+        <ActivityIndicator color={APP_THEME.colors.primary} style={styles.loader} />
+      ) : location ? (
+        <View style={styles.coordsBox}>
+          <Text style={styles.coordText}>
+            Latitud: {location.coords.latitude.toFixed(4)}
+          </Text>
+          <Text style={styles.coordText}>
+            Longitud: {location.coords.longitude.toFixed(4)}
+          </Text>
         </View>
-    );
+      ) : (
+        <Text style={styles.subtext}>Ubicación GPS aún no detectada.</Text>
+      )}
+
+      <AppButton
+        label="Detectar Ubicación GPS"
+        size="md"
+        variant="primary"
+        disabled={loading}
+        onPress={obtenerUbicacion}
+      />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 16,
-        backgroundColor: '#F1F5F9',
-        borderRadius: 12,
-        marginVertical: 12,
-    },
-    title: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 8 },
-    subtext: { fontSize: 13, color: '#64748B', marginBottom: 12 },
-    coordsBox: { marginBottom: 12 },
-    coordText: { fontSize: 14, fontWeight: '600', color: '#2563EB' },
-    btn: {
-        backgroundColor: '#2563EB',
-        paddingVertical: 10,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    btnText: { color: '#FFFFFF', fontWeight: '600', fontSize: 14 },
+  container: {
+    padding: 18,
+    backgroundColor: APP_THEME.colors.surface,
+    borderRadius: APP_THEME.radius.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: APP_THEME.colors.textPrimary,
+    marginBottom: 8,
+  },
+  loader: {
+    marginVertical: 12,
+  },
+  subtext: {
+    fontSize: 13,
+    color: APP_THEME.colors.textMuted,
+    marginBottom: 14,
+  },
+  coordsBox: {
+    marginBottom: 14,
+    padding: 10,
+    borderRadius: APP_THEME.radius.sm,
+    backgroundColor: APP_THEME.colors.primarySoft,
+  },
+  coordText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: APP_THEME.colors.primary,
+  },
 });

@@ -1,83 +1,109 @@
 import * as ImagePicker from 'expo-image-picker';
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, View } from 'react-native';
+import { APP_THEME } from '../constants/theme';
+import { AppButton } from './ui/AppButton';
 
-interface AvatarPickerProps {
-    avatarUri?: string | null;
-    isEditing: boolean;
-    onImageSelected: (uri: string) => void;
+export interface AvatarPickerProps {
+  avatarUri?: string | null;
+  fallbackInitial?: string;
+  isEditing: boolean;
+  onImageSelected: (uri: string) => void;
 }
 
-export const AvatarPicker = ({ avatarUri, isEditing, onImageSelected }: AvatarPickerProps) => {
+const IMAGE_PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
+  mediaTypes: ['images'],
+  allowsEditing: true,
+  aspect: [1, 1],
+  quality: 0.8,
+};
 
-    const seleccionarDeGaleria = async () => {
-        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permission.granted) {
-            Alert.alert('Permiso denegado', 'Necesitamos acceso a tus fotos.');
-            return;
-        }
+export const AvatarPicker = ({
+  avatarUri,
+  fallbackInitial = 'U',
+  isEditing,
+  onImageSelected,
+}: AvatarPickerProps) => {
+  const seleccionarDeGaleria = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permiso denegado', 'Necesitamos acceso a tus fotos para elegir un avatar.');
+      return;
+    }
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.8,
-        });
+    const result = await ImagePicker.launchImageLibraryAsync(IMAGE_PICKER_OPTIONS);
+    if (!result.canceled && result.assets[0]?.uri) {
+      onImageSelected(result.assets[0].uri);
+    }
+  };
 
-        if (!result.canceled) {
-            onImageSelected(result.assets[0].uri);
-        }
-    };
+  const tomarFoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permiso denegado', 'Necesitamos acceso a la cámara para tomar la foto.');
+      return;
+    }
 
-    const tomarFoto = async () => {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-        if (!permission.granted) {
-            Alert.alert('Permiso denegado', 'Necesitamos acceso a la cámara.');
-            return;
-        }
+    const result = await ImagePicker.launchCameraAsync(IMAGE_PICKER_OPTIONS);
+    if (!result.canceled && result.assets[0]?.uri) {
+      onImageSelected(result.assets[0].uri);
+    }
+  };
 
-        const result = await ImagePicker.launchCameraAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.8,
-        });
-
-        if (!result.canceled) {
-            onImageSelected(result.assets[0].uri);
-        }
-    };
-
-    return (
-        <View style={styles.container}>
-            {avatarUri ? (
-                <Image source={{ uri: avatarUri }} style={styles.avatar} />
-            ) : (
-                <View style={[styles.avatar, styles.placeholder]}>
-                    <Text style={styles.placeholderTxt}>Sin Foto</Text>
-                </View>
-            )}
-
-            {isEditing && (
-                <View style={styles.btnRow}>
-                    <Pressable style={styles.btn} onPress={tomarFoto}>
-                        <Text style={styles.btnTxt}>📷 Cámara</Text>
-                    </Pressable>
-
-                    <Pressable style={[styles.btn, styles.btnSecondary]} onPress={seleccionarDeGaleria}>
-                        <Text style={styles.btnTxt}>🖼️ Galería</Text>
-                    </Pressable>
-                </View>
-            )}
+  return (
+    <View style={styles.container}>
+      {avatarUri ? (
+        <Image source={{ uri: avatarUri }} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.placeholder]}>
+          <Text style={styles.placeholderInitial}>{fallbackInitial}</Text>
         </View>
-    );
-}
+      )}
+
+      {isEditing ? (
+        <View style={styles.btnRow}>
+          <AppButton label="📷 Cámara" size="sm" variant="primary" onPress={tomarFoto} />
+          <AppButton
+            label="🖼️ Galería"
+            size="sm"
+            variant="secondary"
+            onPress={seleccionarDeGaleria}
+          />
+        </View>
+      ) : null}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: { alignItems: 'center', marginVertical: 16 },
-    avatar: { width: 110, height: 110, borderRadius: 55, marginBottom: 16 },
-    placeholder: { backgroundColor: '#CBD5E1', justifyContent: 'center', alignItems: 'center' },
-    placeholderTxt: { color: '#475569', fontWeight: '600' },
-    btnRow: { flexDirection: 'row', gap: 10 },
-    btn: { backgroundColor: '#2563EB', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 },
-    btnSecondary: { backgroundColor: '#475569' },
-    btnTxt: { color: '#FFFFFF', fontWeight: '600', fontSize: 13 },
+  container: {
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    borderWidth: 4,
+    borderColor: APP_THEME.colors.surface,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  placeholder: {
+    backgroundColor: APP_THEME.colors.primaryTint,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderInitial: {
+    color: APP_THEME.colors.primaryDark,
+    fontWeight: '800',
+    fontSize: 38,
+  },
+  btnRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
 });

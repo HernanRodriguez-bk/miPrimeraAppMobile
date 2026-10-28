@@ -1,64 +1,77 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CART_KEY = '@la_tienda:cart_v1';
+export const STORAGE_KEYS = {
+  CART: '@la_tienda:cart_v1',
+  FAVORITES: '@favorites',
+  PROFILE: '@user_profile',
+} as const;
 
 export interface CartItem {
-    id: number;
-    title: string;
-    price: number;
-    image: string;
-    quantity: number;
+  id: number;
+  title: string;
+  price: number;
+  image: string;
+  quantity: number;
 }
 
-export const getCart = async (): Promise<CartItem[]> => {
-    try {
-        const jsonValue = await AsyncStorage.getItem(CART_KEY);
-        return jsonValue != null ? JSON.parse(jsonValue) : [];
-    } catch (error) {
-        console.error('Error cargando el carrito:', error);
-        return [];
-    }
-};
+/**
+ * Helper genérico tipado para lectura segura desde AsyncStorage.
+ */
+export async function getStorageItem<T>(key: string, fallback: T): Promise<T> {
+  try {
+    const jsonValue = await AsyncStorage.getItem(key);
+    return jsonValue != null ? (JSON.parse(jsonValue) as T) : fallback;
+  } catch (error) {
+    console.error(`Error leyendo clave "${key}" en AsyncStorage:`, error);
+    return fallback;
+  }
+}
+
+/**
+ * Helper genérico tipado para escritura segura en AsyncStorage.
+ */
+export async function setStorageItem<T>(key: string, value: T): Promise<void> {
+  try {
+    await AsyncStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`Error guardando clave "${key}" en AsyncStorage:`, error);
+  }
+}
+
+/**
+ * Helper genérico para eliminación segura en AsyncStorage.
+ */
+export async function removeStorageItem(key: string): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(key);
+  } catch (error) {
+    console.error(`Error eliminando clave "${key}" en AsyncStorage:`, error);
+  }
+}
+
+export const getCart = (): Promise<CartItem[]> =>
+  getStorageItem<CartItem[]>(STORAGE_KEYS.CART, []);
+
+export const saveCart = (cart: CartItem[]): Promise<void> =>
+  setStorageItem<CartItem[]>(STORAGE_KEYS.CART, cart);
+
+export const clearCart = (): Promise<void> =>
+  removeStorageItem(STORAGE_KEYS.CART);
 
 export const addToCart = async (newItem: CartItem): Promise<void> => {
-    try {
-        const currentCart = await getCart();
-        const existingIndex = currentCart.findIndex((item) => item.id === newItem.id);
+  const currentCart = await getCart();
+  const existingIndex = currentCart.findIndex((item) => item.id === newItem.id);
 
-        if (existingIndex >= 0) {
-            currentCart[existingIndex].quantity += newItem.quantity;
-        } else {
-            currentCart.push(newItem);
-        }
+  if (existingIndex >= 0) {
+    currentCart[existingIndex].quantity += newItem.quantity;
+  } else {
+    currentCart.push(newItem);
+  }
 
-        await AsyncStorage.setItem(CART_KEY, JSON.stringify(currentCart));
-    } catch (error) {
-        console.error('Error al agregar al carrito:', error);
-    }
+  await saveCart(currentCart);
 };
 
 export const removeFromCart = async (id: number): Promise<void> => {
-    try {
-        const currentCart = await getCart();
-        const updatedCart = currentCart.filter((item) => item.id !== id);
-        await AsyncStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
-    } catch (error) {
-        console.error('Error al remover producto:', error);
-    }
-};
-
-export const clearCart = async (): Promise<void> => {
-    try {
-        await AsyncStorage.removeItem(CART_KEY);
-    } catch (error) {
-        console.error('Error al limpiar el carrito:', error);
-    }
-};
-
-export const saveCart = async (cart: CartItem[]): Promise<void> => {
-    try {
-        await AsyncStorage.setItem(CART_KEY, JSON.stringify(cart));
-    } catch (error) {
-        console.error('Error al guardar el carrito:', error);
-    }
+  const currentCart = await getCart();
+  await saveCart(currentCart.filter((item) => item.id !== id));
 };

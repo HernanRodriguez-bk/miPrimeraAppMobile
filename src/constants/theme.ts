@@ -41,6 +41,48 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light;
 
+// ─── Tema Corporativo "La Tienda" (Tokens Centralizados) ─────────────────────
+
+export const APP_THEME = {
+  colors: {
+    primary: '#2563EB',
+    primaryDark: '#1357C5',
+    primarySoft: '#EFF6FF',
+    primaryTint: '#EAF3FF',
+    primaryBorder: '#BFDBFE',
+    success: '#16A34A',
+    danger: '#DC2626',
+    dangerSoft: '#FEE2E2',
+    warning: '#D97706',
+    background: '#F8FAFC',
+    backgroundAlt: '#F4F6F8',
+    surface: '#FFFFFF',
+    surfaceMuted: '#F1F5F9',
+    textPrimary: '#0F172A',
+    textDark: '#0B1F3A',
+    textSecondary: '#475569',
+    textMuted: '#64748B',
+    textPlaceholder: '#94A3B8',
+    border: '#E2E8F0',
+    borderStrong: '#CBD5E1',
+    white: '#FFFFFF',
+  },
+  radius: {
+    sm: 8,
+    md: 12,
+    lg: 16,
+    pill: 999,
+  },
+} as const;
+
+/**
+ * Formatea montos numéricos al formato monetario local de Argentina ($ es-AR)
+ * evitando duplicación de lógica de presentación en tarjetas y pantallas.
+ */
+export function formatPriceARS(amount: number): string {
+  return `$ ${amount.toLocaleString('es-AR')}`;
+}
+
 // ─── Cyber theme (pantallas personalizadas) ───────────────────────────────────
 
 export const CYBER_THEME = {
